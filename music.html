@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Music player</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- font-awesome -->
+    <link rel="stylesheet" href="/fontawesome/css/all.min.css">   
+</head>
+
+<body>
+    <div class="main">
+        <div class="music_container">
+            <h2 id="title"> Song name</h2>
+            <h3 id="artist">artist name</h3>
+            <div class="img_container">
+                <img src="/music player/images/i1.jpg" alt="song_img">
+            </div>
+            <audio src=""></audio>
+            <!-- progress bar  -->
+            <div class="progressbar_container" id="progress_container">
+                <div class="progress_duration_meter">
+                    <div id="current_time">0:00</div>
+                    <div id="duration">dur</div>
+                </div>
+                <div class="progress_div" id="progress_div">
+                    <div class="progress" id="progress"></div>
+                </div>
+            </div>
+
+            <!-- music controls -->
+            <div class="music_controls">
+                <i class="fa fa-backward" aria-hidden="true" id="prev" title="Previous"></i>
+                <i class="fa fa-play-circle" aria-hidden="true" id="play" title="Play"></i>        
+                <!-- <i class="fa fa-pause" aria-hidden="true"></i> -->
+                <!-- <i class="fa fa-stop-circle" aria-hidden="true" id="pause" title="Pause"></i> -->
+                <i class="fa fa-forward" aria-hidden="true" id="next" title="Next"></i>
+
+            </div>
+        </div>
+    </div>
+
+
+    <script>
+        const music = document.querySelector('audio')
+        const play = document.getElementById('play')
+        const prev = document.getElementById('prev')
+        const next = document.getElementById('next')
+        const Img = document.querySelector('img') 
+        const sTitle = document.getElementById('title')
+        const sArtist = document.getElementById('artist')
+        const currtime = document.getElementById('current_time')
+        const rightsideDur = document.getElementById('duration')
+        let progress_div = document.getElementById('progress_div')
+        let progress = document.getElementById('progress')
+
+
+
+    //Managing currently playing song and display : 
+        let isPlaying = false  //setted default value
+
+        const playMusic = () => {
+            isPlaying = true
+            music.play()
+            play.classList.replace('fa-play-circle','fa-stop-circle')
+            Img.classList.add('anime')
+        }
+        const pauseMusic = () => {
+            isPlaying = false
+            music.pause()
+            play.classList.replace('fa-stop-circle','fa-play-circle')
+            Img.classList.remove('anime')
+        }
+        play.addEventListener('click',() => {
+            // if (isPlaying){         //when isPlaying's default value 
+            //     pauseMusic()
+            // }else{
+            //     playMusic()
+            // }
+            //OR 
+            isPlaying ? pauseMusic() : playMusic()       
+        })
+
+    //Managing the forward/backward :
+    const songs = [
+        {   id : 1,
+            name : "ToseNaina",
+            title : "Tose Naina",
+            artist : "artist-1"
+        },
+        {   id : 2,
+            name : "Uska Hi Banana",
+            title : "Uska Hi Banana",
+            artist : "artist-2"
+        },
+        {   id : 3,
+            name : "Liggi",
+            title :  "Liggi",
+            artist : "Ritviz"
+        },
+        {   id : 4,
+            name : "JannatVe",
+            title : "Jannat Ve",
+            artist : "Darshan Raval"
+        },
+        {   id : 5,
+            name : "Brown Munde",
+            title :  "Brown Munde",
+            artist : "artist-5"
+        },
+        {   id : 6,
+            name : "Ilahi",
+            title : "Ilahi",
+            artist : "artist-6"
+        }
+    ]
+
+    const loadSong = (songs) => {
+        sTitle.textContent = songs.title;        //anything.textContent = to change the text from js
+        sArtist.textContent = songs.artist;
+        music.src = `music/${songs.name}.mp3`;
+        Img.src = `/music player/images/i${songs.id}.jpg`;
+    }
+    //initially :
+    songIndex = 0;
+    loadSong(songs[songIndex])
+
+    const nextSong = () => {
+        songIndex = (songIndex+1)%songs.length; 
+        loadSong(songs[songIndex]);
+        playMusic()
+    }
+    const prevSong = (curIndex) => {
+        songIndex = (songIndex-1 + songs.length) % songs.length; 
+        loadSong(songs[songIndex]);
+        playMusic()
+    }
+
+    // progress js work :
+    music.addEventListener('timeupdate',(event)=>{             //check timeupdate on google !!
+        const {currentTime,duration} = event.srcElement;  //object destructuring ,use { } not []
+        console.log("progress% : "+ Math.floor((currentTime/duration)*100))
+        const progress_time = (currentTime/duration)*100;
+        progress.style.width = `${progress_time}%` // SETTING CSS USING JAVASCRIPT
+
+        let min_duration = Math.floor(duration / 60);
+        let sec_duration = Math.floor(duration % 60);
+        let curr_min = Math.floor(currentTime / 60);
+        let curr_sec = Math.floor(currentTime % 60);
+        let songDur_min = Math.floor((duration - currentTime) / 60);
+        let songDur_sec = Math.floor((duration - currentTime) % 60);
+
+        if(curr_min < 10){ curr_min = `0${curr_min}`}
+        if(curr_sec < 10){ curr_sec = `0${curr_sec}`}
+        if(songDur_min < 10){ songDur_min = `0${songDur_min}`}
+        if(songDur_sec < 10){ songDur_sec = `0${songDur_sec}`}
+
+        currtime.textContent = `${curr_min}:${curr_sec}`
+        rightsideDur.textContent = `${songDur_min}:${songDur_sec}`
+    });
+
+    // progress bar onClick functionality:  DOUBBBBBBBTTTTTTTttttttttttttttttttttt///////////////////////////////////
+
+    progress_div.addEventListener('click',(event)=>{
+        console.log(event)
+        const {duration} = music;
+        let move_progress = (event.offsetX / event.srcElement.clientWidth)*duration;
+        console.log(move_progress)
+        music.currentTime = move_progress
+    });
+
+
+    //for previous and next Icon (button) :
+    next.addEventListener('click',nextSong);
+    prev.addEventListener('click',prevSong);
+
+    // Playing next song as current song ends :
+    music.addEventListener('ended',nextSong)  //ended by js (not by us)
+    </script>
+</body>
+</html>
+
+<!-- task left : when pausing,image ko current loction par pause kro na ke 0 degree par -->
+<!-- DOUBBTT : LINE 164 AROUND -->
